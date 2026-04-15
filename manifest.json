@@ -1,8 +1,9 @@
 {
   "name": "顯化日記",
-  "short_name": "日記",
-  "start_url": ".",
+  "short_name": "顯化日記",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#FBF7E9",
-  "theme_color": "#F1CC74"
+  "theme_color": "#F1CC74",
+  "icons": []
 }
