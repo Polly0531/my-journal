@@ -9,12 +9,10 @@
 :root{
   --bg:#FBF7E9;
   --card:#fffdf5;
-  --main:#F1CC74;
+  --gold:#F1CC74;
   --text:#5c4b3a;
+  --muted:#a0917f;
 }
-
-.theme-pink{ --bg:#FDF2F5; --main:#E8A0BF;}
-.theme-green{ --bg:#EEF7F2; --main:#7BBF9A;}
 
 body{
   margin:0;
@@ -26,6 +24,7 @@ body{
 
 h1{
   text-align:center;
+  letter-spacing:4px;
   margin:20px 0;
 }
 
@@ -33,45 +32,43 @@ h1{
   background:var(--card);
   border-radius:20px;
   padding:18px;
-  margin-bottom:15px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.05);
+  margin-bottom:14px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
 }
 
 .label{
-  font-size:13px;
-  margin-bottom:8px;
-  color:#9F8F82;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+  letter-spacing:1px;
 }
 
 textarea,input{
   width:100%;
   padding:10px;
-  border-radius:12px;
+  border-radius:10px;
   border:1px solid #eee;
   background:#fff;
+  font-size:14px;
+}
+
+textarea{
+  min-height:70px;
 }
 
 .btn{
-  margin-top:12px;
-  padding:12px;
+  width:100%;
+  padding:14px;
+  border-radius:40px;
   border:none;
-  border-radius:30px;
-  background:var(--main);
+  background:var(--gold);
   color:white;
   font-weight:bold;
-}
-
-.theme-btn{
-  margin:5px;
-  padding:8px 14px;
-  border-radius:20px;
-  border:none;
-  background:var(--main);
-  color:white;
+  margin-top:10px;
 }
 
 .history-item{
-  padding:8px;
+  padding:10px;
   border-bottom:1px solid #eee;
   cursor:pointer;
 }
@@ -106,9 +103,9 @@ textarea,input{
 
 <div class="card">
 <div class="label">🙏 感恩清單</div>
-<input id="g1">
-<input id="g2">
-<input id="g3">
+<input id="g1" placeholder="我感恩⋯">
+<input id="g2" placeholder="我感謝⋯">
+<input id="g3" placeholder="宇宙給了我⋯">
 </div>
 
 <div class="card">
@@ -116,20 +113,10 @@ textarea,input{
 <input id="action">
 </div>
 
-<button class="btn" onclick="save()">儲存日記</button>
-<button class="btn" onclick="exportIG()">IG 分享</button>
+<button class="btn" onclick="save()">儲存今日日記</button>
 <button class="btn" onclick="toggleHistory()">歷史記錄</button>
 
 <div class="card" id="history" style="display:none;"></div>
-
-<div class="card">
-<div class="label">主題顏色</div>
-<button class="theme-btn" onclick="setTheme('')">金</button>
-<button class="theme-btn" onclick="setTheme('theme-pink')">粉</button>
-<button class="theme-btn" onclick="setTheme('theme-green')">綠</button>
-</div>
-
-<canvas id="canvas" style="display:none;"></canvas>
 
 <script>
 const quotes=[
@@ -147,6 +134,7 @@ quotes[new Date().getDate()%quotes.length];
 
 // 讀取
 const saved=JSON.parse(localStorage.getItem(today)||"{}");
+
 ["attract","become","affirm","realized","g1","g2","g3","action"]
 .forEach(id=>{
 document.getElementById(id).value=saved[id]||"";
@@ -194,37 +182,6 @@ document.getElementById(id).value=item[id]||"";
 el.appendChild(div);
 }catch{}
 });
-}
-
-// 主題
-function setTheme(t){
-document.body.className=t;
-}
-
-// IG分享
-function exportIG(){
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
-
-canvas.width=1080;
-canvas.height=1920;
-
-ctx.fillStyle="#FBF7E9";
-ctx.fillRect(0,0,1080,1920);
-
-ctx.fillStyle="#5c4b3a";
-ctx.font="bold 60px serif";
-ctx.textAlign="center";
-
-ctx.fillText("顯化日記 ✿",540,200);
-
-ctx.font="32px serif";
-ctx.fillText(document.getElementById("attract").value,540,500);
-
-const link=document.createElement("a");
-link.download="journal.png";
-link.href=canvas.toDataURL();
-link.click();
 }
 </script>
 
