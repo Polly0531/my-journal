@@ -16,16 +16,19 @@
 
 body{
   margin:0;
-  padding:20px;
+  padding:16px;
   font-family:"Noto Serif TC", serif;
   background:var(--bg);
   color:var(--text);
 }
 
-h1{
+.header{
   text-align:center;
+  margin:30px 0 10px;
+}
+
+.header h1{
   letter-spacing:4px;
-  margin:20px 0;
 }
 
 .card{
@@ -33,28 +36,23 @@ h1{
   border-radius:20px;
   padding:18px;
   margin-bottom:14px;
-  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+  box-shadow:0 2px 14px rgba(0,0,0,0.05);
 }
 
 .label{
   font-size:12px;
   color:var(--muted);
   margin-bottom:6px;
-  letter-spacing:1px;
 }
 
 textarea,input{
   width:100%;
-  padding:10px;
-  border-radius:10px;
+  border-radius:12px;
   border:1px solid #eee;
-  background:#fff;
-  font-size:14px;
+  padding:10px;
 }
 
-textarea{
-  min-height:70px;
-}
+textarea{min-height:70px;}
 
 .btn{
   width:100%;
@@ -63,23 +61,22 @@ textarea{
   border:none;
   background:var(--gold);
   color:white;
-  font-weight:bold;
   margin-top:10px;
 }
 
 .history-item{
-  padding:10px;
+  padding:8px;
   border-bottom:1px solid #eee;
-  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
+<div class="header">
 <h1>顯化日記 ✿</h1>
-
-<div class="card" id="quote"></div>
+<p id="quote"></p>
+</div>
 
 <div class="card">
 <div class="label">今天我選擇吸引</div>
@@ -97,15 +94,15 @@ textarea{
 </div>
 
 <div class="card">
-<div class="label">已經實現（用已發生語氣）</div>
+<div class="label">已經實現</div>
 <textarea id="realized"></textarea>
 </div>
 
 <div class="card">
-<div class="label">🙏 感恩清單</div>
-<input id="g1" placeholder="我感恩⋯">
-<input id="g2" placeholder="我感謝⋯">
-<input id="g3" placeholder="宇宙給了我⋯">
+<div class="label">感恩清單</div>
+<input id="g1">
+<input id="g2">
+<input id="g3">
 </div>
 
 <div class="card">
@@ -113,10 +110,13 @@ textarea{
 <input id="action">
 </div>
 
-<button class="btn" onclick="save()">儲存今日日記</button>
+<button class="btn" onclick="save()">儲存</button>
 <button class="btn" onclick="toggleHistory()">歷史記錄</button>
+<button class="btn" onclick="exportIG()">IG分享</button>
 
 <div class="card" id="history" style="display:none;"></div>
+
+<canvas id="canvas" style="display:none;"></canvas>
 
 <script>
 const quotes=[
@@ -128,13 +128,11 @@ const quotes=[
 ];
 
 const today=new Date().toISOString().slice(0,10);
-
 document.getElementById("quote").innerText=
 quotes[new Date().getDate()%quotes.length];
 
 // 讀取
 const saved=JSON.parse(localStorage.getItem(today)||"{}");
-
 ["attract","become","affirm","realized","g1","g2","g3","action"]
 .forEach(id=>{
 document.getElementById(id).value=saved[id]||"";
@@ -149,39 +147,57 @@ data[id]=document.getElementById(id).value;
 });
 localStorage.setItem(today,JSON.stringify(data));
 alert("已儲存 ✨");
-renderHistory();
 }
 
 // 歷史
 function toggleHistory(){
 const el=document.getElementById("history");
 el.style.display=el.style.display==="none"?"block":"none";
-renderHistory();
-}
 
-function renderHistory(){
-const el=document.getElementById("history");
 el.innerHTML="";
-
 Object.keys(localStorage).sort().reverse().forEach(date=>{
 try{
-const item=JSON.parse(localStorage.getItem(date));
-if(!item) return;
-
 const div=document.createElement("div");
 div.className="history-item";
 div.innerText=date;
 
 div.onclick=()=>{
+const d=JSON.parse(localStorage.getItem(date));
 ["attract","become","affirm","realized","g1","g2","g3","action"]
 .forEach(id=>{
-document.getElementById(id).value=item[id]||"";
+document.getElementById(id).value=d[id]||"";
 });
 };
 
 el.appendChild(div);
 }catch{}
 });
+}
+
+// IG卡片
+function exportIG(){
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+canvas.width=1080;
+canvas.height=1920;
+
+ctx.fillStyle="#FBF7E9";
+ctx.fillRect(0,0,1080,1920);
+
+ctx.fillStyle="#5c4b3a";
+ctx.font="bold 60px serif";
+ctx.textAlign="center";
+
+ctx.fillText("顯化日記 ✿",540,200);
+
+ctx.font="30px serif";
+ctx.fillText(document.getElementById("attract").value,540,500);
+
+const link=document.createElement("a");
+link.download="journal.png";
+link.href=canvas.toDataURL();
+link.click();
 }
 </script>
 
