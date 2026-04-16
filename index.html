@@ -5,105 +5,185 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>顯化日記</title>
 
-<link rel="manifest" href="manifest.json">
-
 <style>
-body {
-  font-family: sans-serif;
-  background: var(--bg);
-  margin:0;
-  padding:20px;
-  text-align:center;
-}
-
 :root{
   --bg:#FBF7E9;
+  --card:#fff;
   --main:#F1CC74;
+  --text:#5c4b3a;
 }
 
 .theme-pink{ --bg:#FDF2F5; --main:#E8A0BF;}
 .theme-green{ --bg:#EEF7F2; --main:#7BBF9A;}
 
+body{
+  margin:0;
+  padding:20px;
+  font-family:sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+h1{text-align:center;}
+
 .card{
-  background:#fff;
+  background:var(--card);
   border-radius:20px;
   padding:20px;
   margin:15px 0;
+  box-shadow:0 4px 20px rgba(0,0,0,0.05);
 }
 
-input, textarea{
+textarea{
   width:100%;
-  margin-top:10px;
-  padding:10px;
-  border-radius:10px;
+  padding:12px;
+  border-radius:12px;
   border:1px solid #ddd;
+  min-height:80px;
 }
 
 button{
-  margin-top:15px;
-  padding:12px 20px;
+  margin:8px;
+  padding:10px 16px;
   border:none;
   border-radius:20px;
   background:var(--main);
   color:white;
+}
+
+.history-item{
+  padding:10px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<h2>顯化日記 ✿</h2>
+<h1>顯化日記 ✿</h1>
+
+<div class="card" id="quote"></div>
 
 <div class="card">
-  <h3 id="quote"></h3>
+<textarea id="text" placeholder="寫下今天的顯化日記..."></textarea>
+
+<div style="text-align:center">
+<button onclick="save()">儲存</button>
+<button onclick="exportIG()">IG分享</button>
+<button onclick="toggleHistory()">歷史</button>
+</div>
 </div>
 
-<div class="card">
-  <textarea id="text" placeholder="寫下今天的顯化日記..."></textarea>
-  <button onclick="save()">儲存</button>
-  <button onclick="download()">下載圖片</button>
-</div>
+<div class="card" id="history" style="display:none;"></div>
 
-<div class="card">
-  <p>主題顏色</p>
-  <button onclick="setTheme('')">金</button>
-  <button onclick="setTheme('theme-pink')">粉</button>
-  <button onclick="setTheme('theme-green')">綠</button>
-</div>
+<canvas id="canvas" style="display:none;"></canvas>
 
 <script>
-const quotes = [
+const quotes=[
 "你所渴望的正在向你靠近",
 "一切正在為你展開",
-"你已經在成為你想成為的人",
+"你值得擁有美好的一切",
 "宇宙正在支持你",
-"你值得擁有美好的一切"
+"你已經在成為你想成為的人"
 ];
 
-document.getElementById("quote").innerText =
-quotes[new Date().getDate() % quotes.length];
+const today=new Date().toISOString().slice(0,10);
 
-const today = new Date().toISOString().slice(0,10);
+document.getElementById("quote").innerText=
+quotes[new Date().getDate()%quotes.length];
+
+document.getElementById("text").value=
+localStorage.getItem(today)||"";
 
 function save(){
-  localStorage.setItem(today, document.getElementById("text").value);
-  alert("已儲存 ✨");
+localStorage.setItem(today,document.getElementById("text").value);
+alert("已儲存");
+renderHistory();
 }
 
-document.getElementById("text").value =
-localStorage.getItem(today) || "";
-
-function setTheme(t){
-  document.body.className = t;
+// 📚 歷史
+function toggleHistory(){
+const el=document.getElementById("history");
+el.style.display=el.style.display==="none"?"block":"none";
+renderHistory();
 }
 
-function download(){
-  const text = document.getElementById("text").value;
-  const blob = new Blob([text], {type:"text/plain"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "journal.txt";
-  a.click();
+function renderHistory(){
+const el=document.getElementById("history");
+el.innerHTML="";
+
+Object.keys(localStorage).sort().reverse().forEach(date=>{
+const text=localStorage.getItem(date);
+if(!text) return;
+
+const div=document.createElement("div");
+div.className="history-item";
+div.innerText=date;
+
+div.onclick=()=>{
+document.getElementById("text").value=text;
+};
+
+el.appendChild(div);
+});
+}
+
+// 📱 IG 卡片
+function exportIG(){
+const text=document.getElementById("text").value;
+const quote=document.getElementById("quote").innerText;
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+canvas.width=1080;
+canvas.height=1920;
+
+// 背景
+ctx.fillStyle="#FBF7E9";
+ctx.fillRect(0,0,1080,1920);
+
+// 標題
+ctx.fillStyle="#5c4b3a";
+ctx.font="bold 60px serif";
+ctx.textAlign="center";
+ctx.fillText("顯化日記 ✿",540,200);
+
+// quote
+ctx.font="36px serif";
+wrapText(ctx,quote,540,400,800,50);
+
+// 內容
+ctx.font="32px serif";
+wrapText(ctx,text,540,700,800,50);
+
+// footer
+ctx.font="24px serif";
+ctx.fillText("Manifesting Journal",540,1700);
+
+const link=document.createElement("a");
+link.download="IG-journal.png";
+link.href=canvas.toDataURL();
+link.click();
+}
+
+// 自動換行
+function wrapText(ctx,text,x,y,maxWidth,lineHeight){
+const chars=text.split("");
+let line="";
+
+for(let i=0;i<chars.length;i++){
+const test=line+chars[i];
+if(ctx.measureText(test).width>maxWidth){
+ctx.fillText(line,x,y);
+line=chars[i];
+y+=lineHeight;
+}else{
+line=test;
+}
+}
+ctx.fillText(line,x,y);
 }
 </script>
 
